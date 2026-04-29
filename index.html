@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meme Coin Landing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem;
+      --radius-full: 9999px; --radius-xl: 1rem;
+      --font-display: 'Anton', Impact, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --color-bg: #f6f0df;
+      --color-surface: rgba(255,255,255,0.68);
+      --color-border: rgba(42,30,7,0.18);
+      --color-text: #211707;
+      --color-text-muted: rgba(33,23,7,0.72);
+      --color-primary: #1a1208;
+      --color-inverse: #fff8eb;
+      --shadow-lg: 0 18px 60px rgba(14,12,8,0.22);
+      --overlay-top: rgba(0,0,0,0);
+      --overlay-bottom: rgba(0,0,0,0);
+      --overlay-sides: rgba(0,0,0,0);
+      --transition: 220ms cubic-bezier(0.16,1,0.3,1);
+    }
+    [data-theme="dark"] {
+      --color-bg: #080808;
+      --color-surface: rgba(10,10,10,0.42);
+      --color-border: rgba(255,255,255,0.12);
+      --color-text: #fff7ea;
+      --color-text-muted: rgba(255,247,234,0.78);
+      --color-primary: #fff7ea;
+      --color-inverse: #0a0a0a;
+      --shadow-lg: 0 18px 60px rgba(0,0,0,0.5);
+      --overlay-top: rgba(0,0,0,0.35);
+      --overlay-bottom: rgba(0,0,0,0.46);
+      --overlay-sides: rgba(0,0,0,0.42);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body {
+      min-height: 100dvh; overflow: hidden;
+      font-family: var(--font-body);
+      background: var(--color-bg); color: var(--color-text);
+    }
+    a, button { transition: all var(--transition); }
+    button { border: 0; cursor: pointer; }
+
+    .page { position: relative; min-height: 100dvh; isolation: isolate; }
+
+    .video-stack, .video-stack video, .blink-transition { position: absolute; inset: 0; }
+    .video-stack { z-index: -3; overflow: hidden; background: #000; }
+    .video-stack video {
+      width: 100%; height: 100%; object-fit: cover;
+      opacity: 0; transition: opacity 700ms ease;
+    }
+    .video-stack video.active { opacity: 1; }
+
+    .video-overlay {
+      position: absolute; inset: 0; z-index: -2;
+      background:
+        linear-gradient(180deg, var(--overlay-top), var(--overlay-bottom)),
+        linear-gradient(90deg, var(--overlay-sides), transparent 35%, transparent 65%, var(--overlay-sides));
+      transition: background 700ms ease;
+    }
+
+    .dream-tagline {
+      font-family: var(--font-display);
+      font-size: clamp(1.2rem, 1rem + 2.5vw, 2.8rem);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text);
+      line-height: 1.1;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.35);
+    }
+
+    .grain {
+      position: absolute; inset: 0; z-index: -1; opacity: 0.12;
+      background-image: radial-gradient(rgba(255,255,255,0.18) 0.6px, transparent 0.6px);
+      background-size: 10px 10px; mix-blend-mode: soft-light; pointer-events: none;
+    }
+
+    .blink-transition { pointer-events: none; z-index: 40; }
+    .blink-transition::before, .blink-transition::after {
+      content: ""; position: absolute; left: 0; width: 100%; height: 0%; background: #050505;
+    }
+    .blink-transition::before { top: 0; }
+    .blink-transition::after  { bottom: 0; }
+    .blink-transition.active::before { animation: eyelid-top 950ms cubic-bezier(0.76,0,0.24,1); }
+    .blink-transition.active::after  { animation: eyelid-bottom 950ms cubic-bezier(0.76,0,0.24,1); }
+    @keyframes eyelid-top    { 0%{height:0%} 35%{height:52%} 65%{height:52%} 100%{height:0%} }
+    @keyframes eyelid-bottom { 0%{height:0%} 35%{height:52%} 65%{height:52%} 100%{height:0%} }
+
+    .shell {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      padding: clamp(var(--space-4, 1rem), 2vw, var(--space-8, 2rem));
+      gap: var(--space-6);
+    }
+
+    .topbar {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: var(--space-4); position: relative; z-index: 2;
+    }
+
+    .ticker-box, .socials, .ca-card, .theme-toggle-big {
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* ── ТИКЕР × 3 ── */
+    .ticker-box {
+      display: inline-flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-5) var(--space-8); border-radius: var(--radius-full);
+      font-size: clamp(2.25rem, 2rem + 2vw, 4.5rem);
+      text-transform: uppercase;
+      letter-spacing: 0.14em; font-weight: 800;
+    }
+
+    .top-right { display: flex; align-items: center; gap: var(--space-3); }
+
+    .socials {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3); border-radius: var(--radius-full);
+    }
+
+    .social-link {
+      width: 9rem; height: 9rem; border-radius: 50%;
+      display: grid; place-items: center;
+      text-decoration: none;
+      background: rgba(128,128,128,0.08);
+      border: 1px solid rgba(128,128,128,0.14);
+    }
+    .social-link:hover { transform: translateY(-2px); }
+    .social-link img {
+      width: 4.2rem; height: 4.2rem; object-fit: contain;
+      transition: filter var(--transition);
+    }
+    [data-theme="dark"]  .social-link img { filter: brightness(0) invert(1); }
+    [data-theme="light"] .social-link img { filter: brightness(0); }
+
+    /* ── Hero ── */
+    .hero {
+      display: flex; align-items: center; justify-content: flex-start;
+      padding-inline: clamp(1rem, 5vw, 6rem);
+    }
+
+    .hero-inner {
+      display: flex; align-items: center;
+      gap: clamp(1.5rem, 4vw, 3rem);
+    }
+
+    /* ── Большой переключатель ── */
+    .theme-toggle-big {
+      width: clamp(5rem, 9vw, 7rem);
+      height: clamp(5rem, 9vw, 7rem);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .theme-toggle-big:hover { transform: scale(1.08); }
+    .theme-toggle-big svg { width: 46%; height: 46%; }
+
+    .theme-toggle-big.counting {
+      animation: countdown-pulse 1.2s ease-in-out infinite alternate;
+    }
+    @keyframes countdown-pulse {
+      from { box-shadow: 0 0 0 0 rgba(141,255,88,0); }
+      to   { box-shadow: 0 0 0 10px rgba(141,255,88,0.4); }
+    }
+
+    /* ── CA + Buy ── */
+    .center-stack {
+      display: flex; flex-direction: column; gap: var(--space-4);
+      align-items: flex-start;
+    }
+
+    .ca-card {
+      display: inline-flex; align-items: center; gap: var(--space-3);
+      max-width: min(92vw, 42rem);
+      padding: var(--space-3) var(--space-4); border-radius: var(--radius-full);
+      font-size: var(--text-sm); letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--color-text-muted);
+    }
+    .ca-value {
+      font-weight: 800; color: var(--color-text);
+      letter-spacing: 0.03em; text-transform: none;
+      max-width: 18rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .ca-copy {
+      padding: 0.7rem 1rem; border-radius: var(--radius-full);
+      background: var(--color-primary); color: var(--color-inverse);
+      font-weight: 800; font-size: var(--text-xs);
+      letter-spacing: 0.14em; text-transform: uppercase; min-height: 44px; cursor: pointer;
+    }
+    .ca-copy:hover { transform: translateY(-2px); }
+
+    .buy-button {
+      min-width: min(78vw, 18rem); min-height: 4.5rem;
+      padding: var(--space-4) var(--space-8); border-radius: var(--radius-full);
+      background: var(--color-primary); color: var(--color-inverse);
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 1rem + 2vw, 2.4rem);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.28);
+      text-decoration: none; display: inline-grid; place-items: center;
+    }
+    .buy-button:hover { transform: translateY(-2px); }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    /* ── Floating socials — пузырьки ── */
+    .floating-socials {
+      position: fixed;
+      right: clamp(0.6rem, 2vw, 2.5rem);
+      bottom: clamp(0.6rem, 2vw, 2.5rem);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(0.5rem, 1.5vw, 1.2rem);
+    }
+
+    .floating-socials .social-link {
+      width: clamp(3.2rem, 8vw, 10.8rem);
+      height: clamp(3.2rem, 8vw, 10.8rem);
+      border-radius: 50%;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-lg);
+      animation: bubble-float var(--dur, 4s) ease-in-out var(--delay, 0s) infinite;
+      will-change: transform;
+    }
+
+    .floating-socials .social-link img {
+      width: clamp(1.2rem, 3vw, 4.2rem);
+      height: clamp(1.2rem, 3vw, 4.2rem);
+    }
+
+    .floating-socials .social-link:nth-child(1) { --dur: 4.2s; --delay: 0s; }
+    .floating-socials .social-link:nth-child(2) { --dur: 3.6s; --delay: 0.9s; }
+    .floating-socials .social-link:nth-child(3) { --dur: 5.0s; --delay: 1.7s; }
+
+    .floating-socials .social-link:hover {
+      animation-play-state: paused;
+      transform: scale(1.1);
+      box-shadow: 0 0 0 4px rgba(141,255,88,0.35), var(--shadow-lg);
+    }
+
+    @keyframes bubble-float {
+      0%   { transform: translateY(0px)   rotate(0deg)   scale(1);    }
+      20%  { transform: translateY(-14px) rotate(2.5deg) scale(1.02); }
+      45%  { transform: translateY(-24px) rotate(-2deg)  scale(1.04); }
+      70%  { transform: translateY(-10px) rotate(1.5deg) scale(1.01); }
+      100% { transform: translateY(0px)   rotate(0deg)   scale(1);    }
+    }
+
+    /* ── Мобильные ── */
+    @media (max-width: 720px) {
+      .topbar { flex-direction: column; align-items: stretch; }
+      .top-right { justify-content: space-between; }
+      .socials { flex: 1; justify-content: center; }
+      .hero { padding-inline: 1rem; justify-content: center; }
+      .hero-inner { flex-direction: column; align-items: center; }
+      .center-stack { align-items: center; }
+      .ca-card { flex-wrap: wrap; justify-content: center; border-radius: var(--radius-xl); }
+      .ca-value { max-width: 100%; }
+      .buy-button { min-width: min(92vw, 18rem); }
+      .ticker-box { font-size: clamp(1.5rem, 5vw, 2.8rem); padding: var(--space-4) var(--space-6); }
+
+      /* Соцсети — фиксированные, без анимации */
+      .floating-socials { gap: 0.7rem; }
+      .floating-socials .social-link {
+        width: 4.8rem;
+        height: 4.8rem;
+        animation: none;
+      }
+      .floating-socials .social-link img {
+        width: 2rem;
+        height: 2rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="#content" class="sr-only">Skip to content</a>
+  <div class="page">
+    <div class="video-stack" aria-hidden="true">
+      <video class="active" id="video-money" autoplay muted loop playsinline>
+        <source src="/money.mp4" type="video/mp4">
+      </video>
+      <video id="video-cry" autoplay muted loop playsinline>
+        <source src="/cry.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="video-overlay"></div>
+    <div class="grain"></div>
+    <div class="blink-transition" id="blink"></div>
+
+    <main class="shell" id="content">
+      <header class="topbar">
+        <div class="ticker-box">
+          <span>$DREAM</span>
+        </div>
+        <div class="top-right">
+        </div>
+      </header>
+
+      <section class="hero" aria-label="Hero section">
+        <div class="hero-inner">
+
+          <button class="theme-toggle-big counting" id="themeToggle" type="button" aria-label="Переключить видео фон">
+            <svg id="toggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+
+          <div class="center-stack">
+            <p class="dream-tagline">Turn your dream into reality</p>
+            <div class="ca-card">
+              <span>CA</span>
+              <span class="ca-value" id="caText">PASTE_YOUR_CA_HERE</span>
+              <button class="ca-copy" id="copyCa" type="button">Copy</button>
+            </div>
+            <a class="buy-button" href="https://pump.fun" target="_blank" rel="noopener noreferrer">Buy</a>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="floating-socials" aria-label="Social links">
+        <a class="social-link" href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter">
+          <img src="https://cdn.simpleicons.org/x/ffffff" alt="" width="24" height="24" loading="lazy">
+        </a>
+        <a class="social-link" href="https://t.me" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+          <img src="https://cdn.simpleicons.org/telegram/ffffff" alt="" width="24" height="24" loading="lazy">
+        </a>
+        <a class="social-link" href="https://dexscreener.com" target="_blank" rel="noopener noreferrer" aria-label="Dexscreener">
+          <img src="https://cdn.simpleicons.org/webmoney/ffffff" alt="" width="24" height="24" loading="lazy">
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const html       = document.documentElement;
+    const moneyVideo = document.getElementById('video-money');
+    const cryVideo   = document.getElementById('video-cry');
+    const blink      = document.getElementById('blink');
+    const toggle     = document.getElementById('themeToggle');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const copyCa     = document.getElementById('copyCa');
+    const caText     = document.getElementById('caText');
+
+    let currentMode  = 'money';
+    let blinkLock    = false;
+    let autoNightTimer = null;
+
+    const MOON_SVG = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+    const SUN_SVG  = '<circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
+
+    function setAppearance(mode) {
+      const isCry = mode === 'cry';
+      html.setAttribute('data-theme', isCry ? 'light' : 'dark');
+      toggleIcon.innerHTML = isCry ? SUN_SVG : MOON_SVG;
+    }
+
+    function doBlink(callback) {
+      blink.classList.remove('active');
+      void blink.offsetWidth;
+      blink.classList.add('active');
+      setTimeout(callback, 320);
+      setTimeout(() => { blink.classList.remove('active'); blinkLock = false; }, 980);
+    }
+
+    function switchTo(mode) {
+      if (blinkLock) return;
+      blinkLock = true;
+      clearTimeout(autoNightTimer);
+
+      doBlink(() => {
+        if (mode === 'cry') {
+          moneyVideo.classList.remove('active');
+          cryVideo.classList.add('active');
+          cryVideo.play().catch(() => {});
+          toggle.classList.add('counting');
+          autoNightTimer = setTimeout(() => switchTo('money'), 15000);
+        } else {
+          cryVideo.classList.remove('active');
+          moneyVideo.classList.add('active');
+          moneyVideo.play().catch(() => {});
+          toggle.classList.remove('counting');
+        }
+        currentMode = mode;
+        setAppearance(mode);
+      });
+    }
+
+    toggle.addEventListener('click', () => {
+      switchTo(currentMode === 'money' ? 'cry' : 'money');
+    });
+
+    copyCa.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(caText.textContent.trim());
+        const old = copyCa.textContent;
+        copyCa.textContent = 'Copied!';
+        setTimeout(() => copyCa.textContent = old, 1400);
+      } catch {
+        copyCa.textContent = 'Manual';
+        setTimeout(() => copyCa.textContent = 'Copy', 1400);
+      }
+    });
+
+    [moneyVideo, cryVideo].forEach(v =>
+      v.addEventListener('loadeddata', () => v.play().catch(() => {}), { once: true })
+    );
+
+    setAppearance('money');
+  </script>
+</body>
+</html>
